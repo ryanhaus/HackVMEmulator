@@ -1,0 +1,22 @@
+// push {{ segment }} {{ i }}
+{% if segment in ["local", "argument", "this", "that"] %}
+@{% if segment == "local" %}LCL{% else if segment == "argument" %}ARG{% else if segment == "this" %}THIS{% else if segment == "that" %}THAT{% endif %}
+D=M
+@{{ i }}
+A=D+A
+D=M
+{% else if segment == "constant" %}
+@{{ i }}
+D=A
+{% else if segment in ["static", "temp"] %}
+@{% if segment == "static" %}{{ 16 + int(i) }}{% else if segment == "temp" %}{{ 5 + int(i) }}{% endif %}
+D=M
+{% else if segment == "pointer" %}
+@{% if i == "0" %}THIS{% else if i == "1" %}THAT{% endif %}
+D=M
+{% endif %}
+@SP
+A=M
+M=D
+@SP
+M=M+1

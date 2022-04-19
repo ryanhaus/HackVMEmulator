@@ -1,0 +1,14 @@
+// {{ instruction }}
+@SP
+M=M-1
+A=M
+{% if instruction in ["add", "sub"] %}
+D=M
+@SP
+M=M-1
+A=M
+M=M{% if instruction == "add" %}+{%else if instruction == "sub" %}-{% endif %}D
+{% endif %}
+{% if instruction == "neg" %}M=-M{% endif %}
+@SP
+M=M+1
