@@ -5,7 +5,9 @@
 // contains components of an instruction
 struct instruction_components
 {
-	std::string instruction; // the base instruction
+	std::string
+		parent_class, // the class that the instruction belongs to
+		instruction; // the base instruction
 	std::vector<std::string> arguments; // all of the arguments supplied to the instruction
 	uint16_t instruction_id = 0; // id of the instruction
 	bool blank_instruction = false; // whether or not the instruction is blank
@@ -21,3 +23,4 @@ instruction_components parse_instruction(const std::string& instruction); // par
 std::string compile_instruction(const std::string& instruction); // compiles an instruction and adds it to the given vector
 
 void compile_file_to(const std::string& in_vm, const std::string& out_asm); // compiles a VM file and stores it in an ASM file
+void compile_files_to(const std::vector<std::string>& in_vms, const std::string& out_asm); // compiles multiple VM files to store in a singular ASM file

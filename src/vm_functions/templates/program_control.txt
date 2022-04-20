@@ -1,0 +1,18 @@
+// {{ instruction }} {{ destination }}
+{% if instruction == "if-goto" %}
+@SP
+M=M-1
+A=M
+D=M
+D=!D
+@__CMP_TRUE_{{ instruction_id }}
+D;JEQ
+@__END_{{ instruction_id }}
+0;JMP
+(__CMP_TRUE_{{ instruction_id }})
+{% endif %}
+@__LABEL_{{ destination }}
+0;JMP
+{% if instruction == "if-goto" %}
+(__END_{{ instruction_id }})
+{% endif %}

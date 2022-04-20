@@ -38,12 +38,20 @@
     <ClInclude Include="src\vm_functions\functions\vm_logical_arithmetic.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\vm_functions\functions\vm_program_control.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vm_functions\functions\vm_function_control.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="src\vm_functions\templates\push.txt" />
     <Text Include="src\vm_functions\templates\pop.txt" />
     <Text Include="src\vm_functions\templates\arithmetic.txt" />
     <Text Include="src\vm_functions\templates\logical.txt" />
+    <Text Include="src\vm_functions\templates\program_control.txt" />
+    <Text Include="src\vm_functions\templates\function_control.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="in.vm" />

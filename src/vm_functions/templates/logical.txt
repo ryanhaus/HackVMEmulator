@@ -16,7 +16,7 @@ D;J{{ upper(instruction) }}
 A=M
 M=0
 @__END_{{ instruction_id }}
-0;JEQ
+0;JMP
 (__CMP_TRUE_{{ instruction_id }})
 @SP
 A=M

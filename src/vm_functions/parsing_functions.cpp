@@ -1,8 +1,11 @@
 #include "parsing_functions.hpp"
 #include "vm_functions.hpp"
 #include <sstream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 uint16_t instructions_count; // global instructions count
+std::string current_class_focus; // the current class being compiled
 
 // splits a string into a vector of strings separated by each occurrence of the supplied character
 std::vector<std::string> split_by(const std::string& string, const char c)
@@ -76,7 +79,7 @@ std::vector<std::string> split_trim_instruction(const std::string& instruction)
 
 	const auto split = split_by(instruction_copy, ' '); // split by space
 	for (const auto& component : split) // go through each component
-		if (!component.empty())
+		if (!component.empty() && component != "\n") // if empty or newline character
 			components.emplace_back(component); // add to list of components
 
 	return components;
@@ -89,7 +92,7 @@ instruction_components parse_instruction(const std::string& instruction)
 
 	instruction_components components; // components of the instruction (to be returned)
 
-	if (split.empty())
+	if (split.empty() || split[0] == "\n") // if empty, or just newline character
 	{
 		components.blank_instruction = true; // set blank flag
 		return components; // don't modify the instruction further
@@ -100,6 +103,7 @@ instruction_components parse_instruction(const std::string& instruction)
 	components.arguments = split; // set the arguments to the new vector
 
 	components.instruction_id = instructions_count++; // set instruction count
+	components.parent_class = current_class_focus; // set parent class
 
 	for (auto& argument : components.arguments) // go through each argument
 		argument = remove_characters(argument, '\n'); // remove newline characters
@@ -127,10 +131,53 @@ void compile_file_to(const std::string& in_vm, const std::string& out_asm)
 	assert(in_f != nullptr); // make sure it was opened correctly
 
 	char line_buffer[0x80]; // line buffer for reading file
-	std::vector<std::string> asm_out; // assembly
+	std::vector<std::string> asm_out; // vector of assembly instructions
 
 	while (fgets(line_buffer, sizeof(line_buffer), in_f)) // read file line by line
-		asm_out.push_back(compile_instruction(line_buffer)); // compile the instruction specified in the line and append it
+	{
+		auto compiled = compile_instruction(line_buffer);
+		if (!compiled.empty())
+			asm_out.push_back(compiled); // compile the instruction specified in the line and append it
+	}
+
+	fclose(in_f); // close stream
+
+	// write compiled program to file
+	const std::string to_write = join_by(asm_out, '\n');
+	FILE* out_f;
+
+	fopen_s(&out_f, out_asm.c_str(), "w"); // open stream with writing permission
+	assert(out_f != nullptr); // make sure it was opened correctly
+	fputs(to_write.c_str(), out_f); // write to file
+	fclose(out_f); // close stream
+}
+
+// compiles multiple VM files to store in a singular ASM file
+void compile_files_to(const std::vector<std::string>& in_vms, const std::string& out_asm)
+{
+	std::vector<std::string> asm_out; // vector of assembly instructions
+
+	// go through each file
+	for (const auto& in_vm : in_vms)
+	{
+		current_class_focus = fs::path(in_vm).stem().string(); // get the stem (file name w/o extension) and set it as the current class focus
+
+		// read and compile file
+		FILE* in_f;
+		fopen_s(&in_f, in_vm.c_str(), "r"); // open stream with reading permission
+		assert(in_f != nullptr); // make sure it was opened correctly
+
+		char line_buffer[0x80]; // line buffer for reading file
+
+		while (fgets(line_buffer, sizeof(line_buffer), in_f)) // read file line by line
+		{
+			auto compiled = compile_instruction(line_buffer);
+			if (!compiled.empty())
+				asm_out.push_back(compiled); // compile the instruction specified in the line and append it
+		}
+
+		fclose(in_f); // close stream
+	}
 
 	// write compiled program to file
 	const std::string to_write = join_by(asm_out, '\n');

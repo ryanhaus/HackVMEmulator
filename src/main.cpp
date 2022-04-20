@@ -3,7 +3,7 @@
 
 int main()
 {
-	compile_file_to("in.vm", "out.asm");
+	compile_files_to({ "Sys.vm", "Main.vm" }, "FibonacciElement.asm");
 
 	return 0;
 }

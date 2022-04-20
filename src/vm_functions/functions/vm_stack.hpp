@@ -8,6 +8,7 @@ namespace vm_functions
 {
 	const std::vector<std::string> valid_segments = { "local", "argument", "this", "that", "constant", "static", "pointer", "temp"}; // list of valid memory segments
 
+	// parse stack push instructions
 	std::string vm_push(const instruction_components& components)
 	{
 		assert(components.arguments.size() == 2); // ensure we have the segment and i
@@ -19,10 +20,12 @@ namespace vm_functions
 		inja::json data; // data to be supplied to the template
 		data["segment"] = components.arguments[0];
 		data["i"] = components.arguments[1];
+		data["class_name"] = components.parent_class;
 		
 		return remove_blank_lines(env.render(temp, data)) + "\n"; // render, remove all blank lines, add a newline at the end, and return
 	}
 
+	// parse stack pop instructions
 	std::string vm_pop(const instruction_components& components)
 	{
 		assert(components.arguments.size() == 2); // ensure that we have the segment and i
@@ -34,6 +37,7 @@ namespace vm_functions
 		inja::json data; // data to be supplied to the template
 		data["segment"] = components.arguments[0];
 		data["i"] = components.arguments[1];
+		data["class_name"] = components.parent_class;
 
 		return remove_blank_lines(env.render(temp, data)) + "\n"; // render, remove all blank lines, add a newline at the end, and return
 	}

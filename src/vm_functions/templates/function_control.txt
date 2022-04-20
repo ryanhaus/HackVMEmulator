@@ -1,0 +1,108 @@
+{% if instruction in ["function", "call"] %}
+// {{ instruction }} {{ function_name }} {{ n }}
+{% if instruction == "function" %}
+(__FUNC_{{ function_name }})
+{# push local variables #}
+@LCL
+D=M
+@R13
+M=D
+{# loop #}
+@{{ n }}
+D=A
+@R15
+M=D
+@__END_LOOP_{{ function_name }}
+D;JEQ
+(__LOOP_FVAR_{{ function_name }})
+@R13
+A=M
+D=M
+@SP
+A=M
+M=0
+@SP
+M=M+1
+@R13
+M=M+1
+{# comparison #}
+@R15
+M=M-1
+D=M
+@__LOOP_FVAR_{{ function_name }}
+D;JGT
+{# end loop #}
+(__END_LOOP_{{ function_name }})
+{% else if instruction == "call" %}
+{# save return address #}
+@__RET_ADDR_{{ instruction_id }}
+D=A
+@SP
+A=M
+M=D
+@SP
+M=M+1
+{# save frame #}
+{% for var in ["LCL", "ARG", "THIS", "THAT"] %}
+@{{ var }}
+D=M
+@SP
+A=M
+M=D
+@SP
+M=M+1
+{% endfor %}
+{# set new ARG and LCL #}
+@SP
+D=M
+@LCL
+M=D
+@{{ int(n) + 5 }}
+D=D-A
+@ARG
+M=D
+{# jump to function #}
+@__FUNC_{{ function_name }}
+0;JMP
+{# return address #}
+(__RET_ADDR_{{ instruction_id }})
+{% endif %}
+{% else if instruction == "return" %}
+// return
+{# save LCL to R13 #}
+@LCL
+D=M
+@R13
+M=D
+{# save return address to R14 #}
+@5
+D=D-A
+A=D
+D=M
+@R14
+M=D
+{# set new stack pointer and push return value (arg 0) #}
+@SP
+A=M-1
+D=M
+@ARG
+A=M
+M=D
+@ARG
+D=M
+@SP
+M=D+1
+{# restore frame #}
+{% for var in ["THAT", "THIS", "ARG", "LCL"] %}
+@R13
+M=M-1
+A=M
+D=M
+@{{ var }}
+M=D
+{% endfor %}
+{# go to return address (R14) #}
+@R14
+A=M
+0;JMP
+{% endif %}
